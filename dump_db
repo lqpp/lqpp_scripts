@@ -1,0 +1,12 @@
+#!/bin/sh
+rm /root/db_dumps/*.sql.gz
+while read -a line
+do
+  export line
+  echo dumping ${line[1]}
+  su - www-data --preserve-environment -c "pg_dump ${line[1]}" | gzip > /root/db_dumps/${line[1]}.`date +%Y-%m-%d_%H%M%S`.sql.gz
+  echo done
+done < /opt/lqfb/instances
+
+
+

@@ -1,0 +1,139 @@
+#!/bin/sh
+
+## define paths
+export frontend_path=/opt/lqfb/frontend/2.0.2
+export core_path=/opt/lqfb/core/2.0.11
+export webmcp_path=/opt/lqfb/webmcp/1.2.4
+
+echo -e 'Chose location:\n0:root\n1:/int\n2:/bezirke'
+read loc
+#echo 'Enter name of instance (eg: Berlin)'
+#read long_name
+echo 'Enter prefix (eg: be) Must be two letters if not in /bezirke'
+read prefix
+#echo 'Enter Title (eg: LiquidFeeback Piraten Berlin)'
+#read title
+
+case $loc in
+  1) 
+     db_name="int_$prefix"
+     conf_name="int-$prefix"
+     url="/int/$prefix"
+     ;;
+  2) 
+     db_name="bezirke_$prefix"
+     conf_name="bezirke-$prefix"
+     url="/bezirke/$prefix"
+     ;;
+  *) 
+     db_name="$prefix"
+     conf_name="$prefix"
+     url="/$prefix"
+     ;;
+esac
+
+################# Create DB ###################
+
+export db_name
+
+cd $core_path
+su www-data --preserve-environment -c 'createdb lqfb_$db_name'
+
+if [ $? -eq 0 ];
+then	
+  su www-data --preserve-environment -c 'createlang plpgsql lqfb_$db_name'
+  su www-data --preserve-environment -c 'psql -v ON_ERROR_STOP=1 -f core.sql lqfb_$db_name'
+fi
+
+################# Config Lighttpd #################
+cd /etc/lighttpd
+
+if [ -f lqfb/$conf_name.conf ] ;
+then
+  echo "/etc/lighttpd/lqfb/$conf_name.conf already exists. Create new? [Y|n]"
+  read conf
+fi
+
+if [[ $conf = '' || $conf = 'y' || $conf = 'Y' ]];
+then
+  echo "Creating new lighttp conf file"
+
+cat > lqfb/$conf_name.conf << EOF
+alias.url += (
+  "$url/fastpath/" => "$frontend_path/fastpath/$conf_name/",
+  "$url/static/"   => "$frontend_path/static/",
+  "$url/"          => "$webmcp_path/cgi-bin/",
+)
+\$HTTP["url"] =~ "^$url/" {
+  setenv.add-environment += (
+    "WEBMCP_CONFIG_NAME"  => "piraten-$conf_name" ,
+    "WEBMCP_APP_BASEPATH" => "$frontend_path",
+  )
+}
+\$HTTP["url"] =~ "^$url/fastpath/" {
+  cgi.assign = ( "" => "" )
+#  setenv.add-response-header = ( "Cache-Control" => "private; max-age=86400" )
+  expire.url = ( "" => "access plus 24 hours" )
+}
+EOF
+
+fi
+
+/etc/init.d/lighttpd restart
+
+
+################# Config Frontend ####################
+cd $frontend_path/config
+
+if [ -f piraten-$conf_name.lua ];
+then
+  echo "$frontend_path/config/piraten-$conf_name.lua already exists. Create new? [Y|n]"
+  read conf2
+fi
+
+if [[ $conf2 = '' || $conf2 = 'y' || $conf2 = 'Y' ]];
+then
+  echo "Creating new frontend conf file"
+
+cat > piraten-$conf_name.lua << EOF
+config.instance_prefix = "$db_name"
+config.instance_name = "$long_name"
+config.app_title = "$title"
+config.use_terms = ""
+execute.config("piraten-default")
+
+-- Public access level
+-- ------------------------------------------------------------------------
+-- Available options:
+-- "none" 
+--     -> Closed user group, no public access at all
+--        (except login/registration/password reset)
+-- "anonymous"
+--     -> Shows only initiative/suggestions texts and aggregated
+--        supporter/voter counts
+-- "authors_pseudonymous" 
+--     -> Like anonymous, but shows screen names of authors
+-- "all_pseudonymous" 
+--     -> Show everything a member can see, except profile pages
+-- "everything"
+--     -> Show everything a member can see, including profile pages
+-- ------------------------------------------------------------------------
+config.public_access = "none"
+
+EOF
+
+fi
+#################  Avatars ################# 
+cd $frontend_path/fastpath
+mkdir -p $conf_name
+cd $conf_name
+escaped=$(echo $frontend_path | sed 's/\//\\\//g')
+cat  ../getpic.c | sed "s/dbname=liquid_feedback/dbname=lqfb_$db_name/" |  sed  "s/\/opt\/liquid_feedback_testing\/app\/static\/avatar.jpg/${escaped}\/static\/avatar.jpg/"  | cat > getpic.c
+make -f ../Makefile
+
+############## Append to list of instances ####
+cd /opt/lqfb
+cp instances tmp
+grep -vP "$db_name\t" tmp > instances
+rm tmp
+echo -e $url'\t'lqfb_$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances

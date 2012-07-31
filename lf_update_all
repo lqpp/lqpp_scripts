@@ -1,0 +1,9 @@
+#!/bin/sh
+
+while read -a line
+do
+	export line
+	echo running lf_update on ${line[1]}
+  	su - www-data --preserve-environment -c "${line[3]}/lf_update dbname=${line[1]}" 
+
+done < /opt/lqfb/instances

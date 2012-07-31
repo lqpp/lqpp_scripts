@@ -1,0 +1,10 @@
+#!/bin/sh
+FILENAME=/root/test.lqpp.de.tar.gz
+rsnapshot hourly
+cd /.snapshots
+tar -czf $FILENAME .  
+
+gpg --batch --no-tty --symmetric --cipher-algo=TWOFISH --passphrase-file=/root/backup-passphrase $FILENAME
+
+echo "put $FILENAME.gpg" | ncftp backup
+rm $FILENAME $FILENAME.gpg
