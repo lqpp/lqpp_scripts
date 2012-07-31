@@ -1,0 +1,84 @@
+#!/bin/sh
+
+## define paths
+export frontend_path=/opt/lqfb/frontend/2.0.2
+export core_path=/opt/lqfb/core/2.0.11
+export webmcp_path=/opt/lqfb/webmcp/1.2.4
+export update_base=/root/install/liquid_feedback_core/update/
+
+core_updates[0]=core-update.v1.3.1-v1.4.0.sql
+core_updates[1]=core-update.v1.4.0-v2.0.0.sql
+core_updates[2]=core-update.v2.0.0-v2.0.1.sql
+core_updates[3]=core-update.v2.0.1-v2.0.2.sql
+core_updates[4]=core-update.v2.0.2-v2.0.3.sql
+core_updates[5]=core-update.v2.0.3-v2.0.4.sql
+core_updates[6]=core-update.v2.0.4-v2.0.5.sql
+core_updates[7]=core-update.v2.0.5-v2.0.6.sql
+core_updates[8]=core-update.v2.0.6-v2.0.7.sql
+core_updates[9]=core-update.v2.0.7-v2.0.8.sql
+core_updates[10]=core-update.v2.0.8-v2.0.9.sql
+core_updates[11]=core-update.v2.0.9-v2.0.10.sql
+core_updates[12]=core-update.v2.0.10-v2.0.11.sql
+
+export core_updates
+
+echo Select instance to update:
+
+lineNum=0
+while read -a line
+do
+  let lineNum++
+  echo  $lineNum: ${line[0]}
+done < /opt/lqfb/instances
+
+read awnser
+
+export instance=($(sed -n "${awnser}p" /opt/lqfb/instances))
+
+# copy config file
+conf_name=$(echo ${instance[0]} | sed "s/\//-/g" | cut -c2-)
+cp -v ${instance[2]}/config/piraten-$conf_name.lua $frontend_path/config/
+
+/etc/init.d/crond stop
+/etc/init.d/lighttpd stop
+/root/scripts/dump_db
+
+#create new lighttpd conf
+cat > /etc/lighttpd/lqfb/$conf_name.conf << EOF
+alias.url += (
+  "${instance[0]}/fastpath/" => "$frontend_path/fastpath/$conf_name/",
+  "${instance[0]}/static/"   => "$frontend_path/static/",
+  "${instance[0]}/"          => "$webmcp_path/cgi-bin/",
+)
+\$HTTP["url"] =~ "^${instance[0]}/" {
+  setenv.add-environment += (
+    "LANG" => "en_US.UTF-8",
+    "WEBMCP_CONFIG_NAME"  => "piraten-$conf_name" ,
+    "WEBMCP_APP_BASEPATH" => "$frontend_path",
+  )
+}
+\$HTTP["url"] =~ "^${instance[0]}/fastpath/" {
+  cgi.assign = ( "" => "" )
+#  setenv.add-response-header = ( "Cache-Control" => "private; max-age=86400" )
+  expire.url = ( "" => "access plus 24 hours" )
+}
+EOF
+
+#copy database
+export db_name=${instance[1]}
+su www-data --preserve-environment -c 'echo CREATE DATABASE ${db_name}_1_3 WITH TEMPLATE $db_name | psql $db_name' 
+
+#update database
+cd $update_base
+for update in $core_updates ; do
+
+  export update
+  echo running $update
+  su www-data --preserve-environment -c 'cat $update | psql $db_name' 
+
+done
+
+
+/etc/init.d/crond start
+/etc/init.d/lighttpd start
+
