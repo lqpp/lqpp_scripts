@@ -1,0 +1,10 @@
+#!/bin/sh
+
+while read -a line
+do
+	export line
+	echo running extend_all_issues on ${line[1]}
+	cd /root/scripts
+  	su www-data --preserve-environment -c "psql ${line[1]} < extend‐issues"
+
+done < /opt/lqfb/instances

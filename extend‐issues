@@ -1,0 +1,6 @@
+begin;
+update issue set admission_time=admission_time+'3 hours'::Interval  where accepted is NULL and closed is NULL;
+update issue set discussion_time=discussion_time+'3 hours'::Interval  where accepted is not NULL and half_frozen is NULL and closed is NULL;
+update issue set verification_time=verification_time+'3 hours'::Interval  where  half_frozen is not NULL and fully_frozen is NULL and closed is NULL;
+update issue set voting_time=voting_time+'3 hours'::Interval  where fully_frozen is not NULL and closed is NULL;
+commit;
