@@ -1,18 +1,14 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.0.3
+export frontend_path=/opt/lqfb/frontend/2.0.2
 export core_path=/opt/lqfb/core/2.0.11
 export webmcp_path=/opt/lqfb/webmcp/1.2.4
 
-echo -e 'Chose location:\n0:root\n1:/int\n2:/bezirke'
+echo -e 'Chose location:\n0:root\n1:/int\n2:/bezirke\n3:/kv'
 read loc
-#echo 'Enter name of instance (eg: Berlin)'
-#read long_name
-echo 'Enter prefix (eg: be) Must be two letters if not in /bezirke'
+echo 'Enter prefix (eg: be) Must be two letters for / and /int/'
 read prefix
-#echo 'Enter Title (eg: LiquidFeeback Piraten Berlin)'
-#read title
 
 case $loc in
   1) 
@@ -24,6 +20,11 @@ case $loc in
      db_name="bezirke_$prefix"
      conf_name="bezirke-$prefix"
      url="/bezirke/$prefix"
+     ;;
+  3)
+     db_name="kv_$prefix"
+     conf_name="kv-$prefix"
+     url="/kv/$prefix"
      ;;
   *) 
      db_name="$prefix"
@@ -66,6 +67,7 @@ alias.url += (
 )
 \$HTTP["url"] =~ "^$url/" {
   setenv.add-environment += (
+    "LANG" => "en_US.UTF-8",
     "WEBMCP_CONFIG_NAME"  => "piraten-$conf_name" ,
     "WEBMCP_APP_BASEPATH" => "$frontend_path",
   )
@@ -79,7 +81,7 @@ EOF
 
 fi
 
-#/etc/init.d/lighttpd restart
+/etc/init.d/lighttpd restart
 
 
 ################# Config Frontend ####################
@@ -97,10 +99,9 @@ then
 
 cat > piraten-$conf_name.lua << EOF
 config.instance_prefix = "$db_name"
-config.instance_name = "$long_name"
+config.instance_name = "NameOfArea"
 config.app_title = "$title"
-config.use_terms = "=== [https://lqpp.de/text/$conf_name/usage_terms.html Nutzungsbedingungen]===\n\n \n\n=== [https://lqpp.de/text/$conf_name/privacy_policy.html Datenschutzerklärung] ===" 
-config.footer_html = '<div style="font-size: 90%; margin-top: 3ex; text-align: center;"><a href="https://lqpp.de/text/$conf_name/usage_terms.html">Nutzungsbedingungen</a> &middot; <a href="https://lqpp.de/text/$conf_name/privacy_policy.html">Datenschutzerklärung</a> &middot; <a href="https://lqpp.de/$conf_name/index/about.html">Impressum / Kontakt</a></div>'
+config.use_terms = "=== [https://lqpp.de/text/$conf_name/usage_terms.html Nutzungsbedingungen]===\n\n\n\n === [https://lqpp.de/text/$conf_name/privacy_policy.html Datenschutzerklärung] ===" 
 
 execute.config("piraten-default")
 
@@ -125,7 +126,7 @@ config.public_access = "anonymous"
 EOF
 
 fi
-mkdir -p /var/www/text/$conf_name
+mkdir -p /var/www/lighttpd/text/$conf_name
 #################  Avatars ################# 
 cd $frontend_path/fastpath
 mkdir -p $conf_name
