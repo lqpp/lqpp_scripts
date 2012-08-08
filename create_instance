@@ -5,7 +5,7 @@ export frontend_path=/opt/lqfb/frontend/2.0.2
 export core_path=/opt/lqfb/core/2.0.11
 export webmcp_path=/opt/lqfb/webmcp/1.2.4
 
-echo -e 'Chose location:\n0:root\n1:/int\n2:/bezirke\n3:/kv'
+echo -e 'Chose location:\n0:root\n1:/int\n2:/bezirke\n3:/kvs'
 read loc
 echo 'Enter prefix (eg: be) Must be two letters for / and /int/'
 read prefix
@@ -22,9 +22,9 @@ case $loc in
      url="/bezirke/$prefix"
      ;;
   3)
-     db_name="kv_$prefix"
-     conf_name="kv-$prefix"
-     url="/kv/$prefix"
+     db_name="ksv_$prefix"
+     conf_name="kvs-$prefix"
+     url="/kvs/$prefix"
      ;;
   *) 
      db_name="$prefix"
