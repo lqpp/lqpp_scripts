@@ -70,13 +70,28 @@ su www-data --preserve-environment -c 'echo CREATE DATABASE ${db_name}_1_3 WITH 
 
 #update database
 cd $update_base
-for update in $core_updates ; do
+for update in "${core_updates[@]}" ; do
 
   export update
-  echo running $update
+  echo running $update confirm
   su www-data --preserve-environment -c 'cat $update | psql $db_name' 
 
 done
+
+#Avatars
+cd $frontend_path/fastpath
+mkdir -p $conf_name
+cd $conf_name
+escaped=$(echo $frontend_path | sed 's/\//\\\//g')
+cat  ../getpic.c | sed "s/dbname=liquid_feedback/dbname=lqfb_$db_name/" |  sed  "s/\/opt\/liquid_feedback_testing\/app\/static\/avatar.jpg/${escaped}\/static\/avatar.jpg/"  | cat > getpic.c
+make -f ../Makefile
+
+#update instances file
+cd /opt/lqfb
+cp instances tmp
+grep -vP "$db_name\t" tmp > instances
+rm tmp
+echo -e $url'\t'lqfb_$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
 
 
 /etc/init.d/crond start
