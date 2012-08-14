@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.0.2
+export frontend_path=/opt/lqfb/frontend/2.0.3
 export core_path=/opt/lqfb/core/2.0.11
 export webmcp_path=/opt/lqfb/webmcp/1.2.4
 export update_base=/root/install/liquid_feedback_core/update/
@@ -83,7 +83,7 @@ cd $frontend_path/fastpath
 mkdir -p $conf_name
 cd $conf_name
 escaped=$(echo $frontend_path | sed 's/\//\\\//g')
-cat  ../getpic.c | sed "s/dbname=liquid_feedback/dbname=lqfb_$db_name/" |  sed  "s/\/opt\/liquid_feedback_testing\/app\/static\/avatar.jpg/${escaped}\/static\/avatar.jpg/"  | cat > getpic.c
+cat  ../getpic.c | sed "s/dbname=liquid_feedback/dbname=$db_name/" |  sed  "s/\/opt\/liquid_feedback_testing\/app\/static\/avatar.jpg/${escaped}\/static\/avatar.jpg/"  | cat > getpic.c
 make -f ../Makefile
 
 #update instances file
@@ -91,9 +91,9 @@ cd /opt/lqfb
 cp instances tmp
 grep -vP "$db_name\t" tmp > instances
 rm tmp
-echo -e $url'\t'lqfb_$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
+echo -e $url'\t'$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
 
 
 /etc/init.d/crond start
-/etc/init.d/lighttpd start
+#/etc/init.d/lighttpd start
 
