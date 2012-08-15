@@ -6,8 +6,8 @@ do
 	if [ "${line[5]}" == "export=true" ]; 
 	then
 		echo exporting: ${line[1]}
-		mkdir -p /opt/lqfb/downloads${line[0]}
-		chmod a+w /opt/lqfb/downloads${line[0]}
-	  	su - postgres --preserve-environment -c "${line[3]}/lf_export ${line[1]} /opt/lqfb/downloads${line[0]}/${line[1]}.`date +%Y-%m-%d_%H-%M_%Z`.sql.gz" 
+		mkdir -p /opt/lqfb/download${line[0]}
+		chmod a+w /opt/lqfb/download${line[0]}
+	  	su - postgres --preserve-environment -c "${line[3]}/lf_export ${line[1]} /opt/lqfb/download${line[0]}/${line[1]}.`date +%Y-%m-%d_%H-%M_%Z`.sql.gz" 
 	fi
 done < /opt/lqfb/instances
