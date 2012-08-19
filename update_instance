@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.0.3
+export frontend_path=/opt/lqfb/frontend/2.0.4
 export core_path=/opt/lqfb/core/2.0.11
 export webmcp_path=/opt/lqfb/webmcp/1.2.4
 export update_base=/root/install/liquid_feedback_core/update/
@@ -91,9 +91,10 @@ cd /opt/lqfb
 cp instances tmp
 grep -vP "$db_name\t" tmp > instances
 rm tmp
+export url=${instance[0]}
 echo -e $url'\t'$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
 
 
 /etc/init.d/crond start
-#/etc/init.d/lighttpd start
+/etc/init.d/lighttpd start
 
