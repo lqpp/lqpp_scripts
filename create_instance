@@ -22,7 +22,7 @@ case $loc in
      url="/bezirke/$prefix"
      ;;
   3)
-     db_name="ksv_$prefix"
+     db_name="kvs_$prefix"
      conf_name="kvs-$prefix"
      url="/kvs/$prefix"
      ;;
