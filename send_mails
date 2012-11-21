@@ -35,7 +35,7 @@ do
 		export line
 		log "Instance: ${conf}"
 
-		su - postgres --preserve-environment -c "(cd ${line[2]} && echo 'Event:send_next_notification()' | ${line[4]}/bin/webmcp_shell $conf ) >> '${LOGFILE}' "
+		su - postgres --preserve-environment -c "(cd ${line[2]} && echo 'Event:send_notifications_loop()' | ${line[4]}/bin/webmcp_shell $conf & ) >> '${LOGFILE}'"
 	fi
 done < /opt/lqfb/instances
 
