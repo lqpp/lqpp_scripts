@@ -1,37 +1,44 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.0.4
-export core_path=/opt/lqfb/core/2.0.11
+export frontend_path=/opt/lqfb/frontend/2.0.5
+export core_path=/opt/lqfb/core/2.0.12
 export webmcp_path=/opt/lqfb/webmcp/1.2.4
-export update_base=/root/install/liquid_feedback_core/update/
+export update_base=$core_path/update/
 
-core_updates[0]=core-update.v1.3.1-v1.4.0.sql
-core_updates[1]=core-update.v1.4.0-v2.0.0.sql
-core_updates[2]=core-update.v2.0.0-v2.0.1.sql
-core_updates[3]=core-update.v2.0.1-v2.0.2.sql
-core_updates[4]=core-update.v2.0.2-v2.0.3.sql
-core_updates[5]=core-update.v2.0.3-v2.0.4.sql
-core_updates[6]=core-update.v2.0.4-v2.0.5.sql
-core_updates[7]=core-update.v2.0.5-v2.0.6.sql
-core_updates[8]=core-update.v2.0.6-v2.0.7.sql
-core_updates[9]=core-update.v2.0.7-v2.0.8.sql
-core_updates[10]=core-update.v2.0.8-v2.0.9.sql
-core_updates[11]=core-update.v2.0.9-v2.0.10.sql
-core_updates[12]=core-update.v2.0.10-v2.0.11.sql
+#core_updates[${#core_updates[@]}]=core-update.v1.3.1-v1.4.0.sql
+#core_updates[${#core_updates[@]}]=core-update.v1.4.0-v2.0.0.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.0-v2.0.1.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.1-v2.0.2.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.2-v2.0.3.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.3-v2.0.4.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.4-v2.0.5.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.5-v2.0.6.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.6-v2.0.7.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.7-v2.0.8.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.8-v2.0.9.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.9-v2.0.10.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.10-v2.0.11.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.11-v2.0.12.sql
 
 export core_updates
 
-echo Select instance to update:
+echo "Select instance to update ([x] to cancel)":
 
 lineNum=0
 while read -a line
 do
   let lineNum++
-  echo  $lineNum: ${line[0]}
+  echo -e $lineNum: ${line[0]}"\t""\t"${line[2]}"\t""\t"${line[3]}
 done < /opt/lqfb/instances
 
 read awnser
+
+if [ $awnser == "x" ]
+then
+        echo "cancelled"
+        exit 1
+fi
 
 export instance=($(sed -n "${awnser}p" /opt/lqfb/instances))
 
@@ -66,7 +73,7 @@ EOF
 
 #copy database
 export db_name=${instance[1]}
-su www-data --preserve-environment -c 'echo CREATE DATABASE ${db_name}_1_3 WITH TEMPLATE $db_name | psql $db_name' 
+su www-data --preserve-environment -c 'echo CREATE DATABASE ${db_name}_11 WITH TEMPLATE $db_name | psql $db_name' 
 
 #update database
 cd $update_base
