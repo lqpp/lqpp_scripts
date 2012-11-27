@@ -1,9 +1,9 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.0.5
+export frontend_path=/opt/lqfb/frontend/2.1.0
 export core_path=/opt/lqfb/core/2.0.12
-export webmcp_path=/opt/lqfb/webmcp/1.2.4
+export webmcp_path=/opt/lqfb/webmcp/1.2.5
 export update_base=$core_path/update/
 
 #core_updates[${#core_updates[@]}]=core-update.v1.3.1-v1.4.0.sql
@@ -19,7 +19,8 @@ export update_base=$core_path/update/
 #core_updates[${#core_updates[@]}]=core-update.v2.0.8-v2.0.9.sql
 #core_updates[${#core_updates[@]}]=core-update.v2.0.9-v2.0.10.sql
 #core_updates[${#core_updates[@]}]=core-update.v2.0.10-v2.0.11.sql
-core_updates[${#core_updates[@]}]=core-update.v2.0.11-v2.0.12.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.0.11-v2.0.12.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.12-v2.1.0.sql
 
 export core_updates
 
@@ -46,9 +47,9 @@ export instance=($(sed -n "${awnser}p" /opt/lqfb/instances))
 conf_name=$(echo ${instance[0]} | sed "s/\//-/g" | cut -c2-)
 cp -v ${instance[2]}/config/piraten-$conf_name.lua $frontend_path/config/
 
-/etc/init.d/crond stop
+#/etc/init.d/crond stop
 /etc/init.d/lighttpd stop
-/root/scripts/dump_db
+#/root/scripts/dump_db
 
 #create new lighttpd conf
 cat > /etc/lighttpd/lqfb/$conf_name.conf << EOF
@@ -102,6 +103,6 @@ export url=${instance[0]}
 echo -e $url'\t'$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
 
 
-/etc/init.d/crond start
+#/etc/init.d/crond start
 /etc/init.d/lighttpd start
 
