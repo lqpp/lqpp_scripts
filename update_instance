@@ -6,20 +6,20 @@ export core_path=/opt/lqfb/core/2.1.0
 export webmcp_path=/opt/lqfb/webmcp/1.2.5
 export update_base=$core_path/update/
 
-#core_updates[${#core_updates[@]}]=core-update.v1.3.1-v1.4.0.sql
-#core_updates[${#core_updates[@]}]=core-update.v1.4.0-v2.0.0.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.0-v2.0.1.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.1-v2.0.2.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.2-v2.0.3.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.3-v2.0.4.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.4-v2.0.5.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.5-v2.0.6.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.6-v2.0.7.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.7-v2.0.8.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.8-v2.0.9.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.9-v2.0.10.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.10-v2.0.11.sql
-#core_updates[${#core_updates[@]}]=core-update.v2.0.11-v2.0.12.sql
+core_updates[${#core_updates[@]}]=core-update.v1.3.1-v1.4.0.sql
+core_updates[${#core_updates[@]}]=core-update.v1.4.0-v2.0.0.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.0-v2.0.1.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.1-v2.0.2.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.2-v2.0.3.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.3-v2.0.4.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.4-v2.0.5.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.5-v2.0.6.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.6-v2.0.7.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.7-v2.0.8.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.8-v2.0.9.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.9-v2.0.10.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.10-v2.0.11.sql
+core_updates[${#core_updates[@]}]=core-update.v2.0.11-v2.0.12.sql
 core_updates[${#core_updates[@]}]=core-update.v2.0.12-v2.1.0.sql
 
 export core_updates

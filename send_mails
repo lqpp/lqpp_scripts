@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+# TODO: This scripts is a mess and needs some serious rewriting
+
 PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
 LOGFILE="/var/log/lf-notify.log"
