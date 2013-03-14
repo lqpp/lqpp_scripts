@@ -1,0 +1,52 @@
+#!/bin/sh
+
+su nodejs -c "forever stopall"
+
+echo making sure the db rights are alright
+./add_db_user 
+
+
+while read -a line
+do
+	export line
+
+	if [ ${#line[@]} -gt 6 ]
+	then
+        	api_port=${line[6]#*=}
+
+		api_name=$(echo ${line[0]} | sed "s/\//-/g" | cut -c2-)
+			
+		## check if api folder exists
+		dir=/opt/lqfb/api-instances/$api_name
+		if [ ! -d $dir ]
+		then
+			echo Creating directory $dir
+			cp -r /opt/lqfb/lfapi $dir
+		
+			# write config
+			cat > $dir/config.js << EOF
+exports.bind_address = '127.0.0.1';
+exports.bind_port = $api_port;
+exports.public_access_level = 'anonymous';
+exports.connectionString = 'pg://localhost/${line[1]}';
+exports.public_url_path = 'http://api-$api_name.lqpp.de/';
+exports.mail = {
+  from:                'LQFB <support@lqpp.de>',
+  subject_prefix:      '[lfapi] '
+};
+exports.settings = {
+  result_row_limit: { max: 1001, default: 101 }
+}
+EOF
+
+	
+		
+		fi
+
+		echo Staring api-$api_name on Port $api_port
+		
+		cd $dir		
+		su nodejs -c "forever start lfapi.js"
+	fi
+
+done < /opt/lqfb/instances

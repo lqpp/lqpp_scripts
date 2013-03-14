@@ -1,8 +1,8 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.1.2
-export core_path=/opt/lqfb/core/2.1.0
+export frontend_path=/opt/lqfb/frontend/2.2.0
+export core_path=/opt/lqfb/core/2.2.0
 export webmcp_path=/opt/lqfb/webmcp/1.2.5
 export update_base=$core_path/update/
 
@@ -21,6 +21,7 @@ export update_base=$core_path/update/
 #core_updates[${#core_updates[@]}]=core-update.v2.0.10-v2.0.11.sql
 #core_updates[${#core_updates[@]}]=core-update.v2.0.11-v2.0.12.sql
 #core_updates[${#core_updates[@]}]=core-update.v2.0.12-v2.1.0.sql
+#core_updates[${#core_updates[@]}]=core-update.v2.1.0-v2.2.0.sql
 
 export core_updates
 
@@ -57,6 +58,15 @@ cp -v ${instance[2]}/config/piraten-$conf_name.lua $frontend_path/config/
 /etc/init.d/lighttpd stop
 #/root/scripts/dump_db
 
+### API Port
+if [ ${#instance[@]} -gt 6 ]
+then
+	api_port=${instance[6]#*=}
+else
+    api_port=$(($(cat /opt/lqfb/api_port) + 1))
+    echo $api_port > /opt/lqfb/api_port
+fi
+
 #create new lighttpd conf
 cat > /etc/lighttpd/lqfb/$conf_name.conf << EOF
 alias.url += (
@@ -75,6 +85,13 @@ alias.url += (
   cgi.assign = ( "" => "" )
 #  setenv.add-response-header = ( "Cache-Control" => "private; max-age=86400" )
   expire.url = ( "" => "access plus 24 hours" )
+}
+\$HTTP["host"]  == "api-$conf_name.lqpp.de"{
+        proxy.server = ( "" =>
+                (
+                        ( "host" => "127.0.0.1", "port" => $api_port )
+                )
+        )
 }
 EOF
 
@@ -106,9 +123,9 @@ cp instances tmp
 grep -vP "$db_name\t" tmp > instances
 rm tmp
 export url=${instance[0]}
-echo -e $url'\t'$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
+echo -e $url'\t'$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\t'${instance[5]}'\tapiport='$api_port >> /opt/lqfb/instances
 
 
 #/etc/init.d/crond start
-/etc/init.d/lighttpd start
+#/etc/init.d/lighttpd start
 

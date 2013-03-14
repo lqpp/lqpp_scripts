@@ -1,13 +1,13 @@
 #!/bin/sh
 
 ## define paths
-export frontend_path=/opt/lqfb/frontend/2.1.2
+export frontend_path=/opt/lqfb/frontend/2.1.3
 export core_path=/opt/lqfb/core/2.1.0
 export webmcp_path=/opt/lqfb/webmcp/1.2.5
 
 echo -e 'Chose location:\n0:root\n1:/int\n2:/bezirke\n3:/kvs'
 read loc
-echo 'Enter prefix (eg: be) Must be two letters for / and /int/'
+echo 'Enter prefix (eg: be) '
 read prefix
 
 case $loc in
@@ -57,9 +57,12 @@ fi
 
 if [[ $conf = '' || $conf = 'y' || $conf = 'Y' ]];
 then
-  echo "Creating new lighttp conf file"
+  	echo "Creating new lighttp conf file"
 
-cat > lqfb/$conf_name.conf << EOF
+	api_port=$(($(cat /opt/lqfb/api_port) + 1))
+	echo $api_port > /opt/lqfb/api_port
+
+	cat > lqfb/$conf_name.conf << EOF
 alias.url += (
   "$url/fastpath/" => "$frontend_path/fastpath/$conf_name/",
   "$url/static/"   => "$frontend_path/static/",
@@ -74,8 +77,14 @@ alias.url += (
 }
 \$HTTP["url"] =~ "^$url/fastpath/" {
   cgi.assign = ( "" => "" )
-#  setenv.add-response-header = ( "Cache-Control" => "private; max-age=86400" )
   expire.url = ( "" => "access plus 24 hours" )
+}
+\$HTTP["host"]  == "api-$conf_name.lqpp.de"{
+        proxy.server = ( "" =>
+                (
+                        ( "host" => "127.0.0.1", "port" => $api_port )
+                )
+        )
 }
 EOF
 
@@ -140,4 +149,4 @@ cd /opt/lqfb
 cp instances tmp
 grep -vP "$db_name\t" tmp > instances
 rm tmp
-echo -e $url'\t'lqfb_$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=false' >> /opt/lqfb/instances
+echo -e $url'\t'lqfb_$db_name'\t'$frontend_path'\t'$core_path'\t'$webmcp_path'\texport=true\tapiport='$api_port >> /opt/lqfb/instances

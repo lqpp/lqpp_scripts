@@ -1,44 +1,14 @@
 #!/bin/bash
 
 
-# TODO: This scripts is a mess and needs some serious rewriting
-
-PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
-
-LOGFILE="/var/log/lf-notify.log"
-PIDFILE="/var/run/lf-notify.pid"
-
-PID=$$
-
-# log to console, logfile and syslog
-log () {
-  echo "$1"
-  echo "$( /bin/date '+%Y-%m-%d %H:%M.%S' ) $1" | tee -a "${LOGFILE}" | logger -t "lf-notify"
-}
-
-# start only once
-if [ -f "${PIDFILE}" ] && kill -CONT $( cat "${PIDFILE}" ) 2>/dev/null
-then
-  log "lf-notify is already running"
-  exit 1
-fi
-
-# save pid
-echo "${PID}" > "${PIDFILE}"
-log "----------------------------------------------"
-log "sending notifications..."
-
 while read -a line
 do
 	core=${line[3]}
 	version=${core##*/}
-	if [ "${version:0:1}" == "2" ]; 
-	then
-		export conf=piraten$( echo ${line[0]} | sed -e  's/\//-/g')
-		export line
-		log "Instance: ${conf}"
+	export conf=piraten$( echo ${line[0]} | sed -e  's/\//-/g')
+	export line
 
-		su - postgres --preserve-environment -c "(cd ${line[2]} && echo 'Event:send_notifications_loop()' | ${line[4]}/bin/webmcp_shell $conf & ) >> '${LOGFILE}'"
-	fi
+	su - www-data --preserve-environment -c "(cd ${line[2]} && echo 'Event:send_notifications_loop()' | ${line[4]}/bin/webmcp_shell $conf & ) "
+	sleep 5
 done < /opt/lqfb/instances
 

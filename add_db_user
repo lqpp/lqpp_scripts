@@ -1,0 +1,9 @@
+#!/bin/sh
+
+while read -a line
+do
+	export line
+  	su - postgres --preserve-environment -c "echo grant usage on schema public to nodejs | psql ${line[1]} " 
+  	su - postgres --preserve-environment -c "echo grant select on all tables in schema public to nodejs | psql ${line[1]} " 
+
+done < /opt/lqfb/instances
